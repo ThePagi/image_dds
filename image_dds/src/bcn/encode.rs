@@ -10,9 +10,11 @@ impl From<Quality> for intel_tex_2::bc6h::EncodeSettings {
     fn from(value: Quality) -> Self {
         // TODO: Test quality settings and speed for bc6h.
         match value {
-            Quality::Fast => intel_tex_2::bc6h::very_fast_settings(),
+            Quality::VeryFast => intel_tex_2::bc6h::very_fast_settings(),
+            Quality::Fast => intel_tex_2::bc6h::very_settings(),
             Quality::Normal => intel_tex_2::bc6h::basic_settings(),
             Quality::Slow => intel_tex_2::bc6h::slow_settings(),
+            Quality::VerySlow => intel_tex_2::bc6h::very_slow_settings(),
         }
     }
 }
@@ -22,9 +24,11 @@ impl From<Quality> for intel_tex_2::bc7::EncodeSettings {
         // bc7 has almost imperceptible errors even at ultra_fast
         // 4k rgba ultra fast (2s), very fast (7s), fast (12s)
         match value {
-            Quality::Fast => intel_tex_2::bc7::alpha_ultra_fast_settings(),
-            Quality::Normal => intel_tex_2::bc7::alpha_very_fast_settings(),
-            Quality::Slow => intel_tex_2::bc7::alpha_fast_settings(),
+            Quality::VeryFast => intel_tex_2::bc7::alpha_ultra_fast_settings(),
+            Quality::Fast => intel_tex_2::bc7::alpha_very_fast_settings(),
+            Quality::Normal => intel_tex_2::bc7::alpha_fast_settings(),
+            Quality::Slow => intel_tex_2::bc7::alpha_basic_settings(),
+            Quality::VerySlow => intel_tex_2::bc7::alpha_slow_settings(),
         }
     }
 }

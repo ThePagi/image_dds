@@ -83,11 +83,13 @@ pub use dds::*;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Quality {
     /// Faster exports with slightly lower quality.
+    VeryFast,
     Fast,
     /// Normal export speed and quality.
     Normal,
     /// Slower exports for slightly higher quality.
     Slow,
+    VerySlow,
 }
 
 /// Options for how many mipmaps to generate.
