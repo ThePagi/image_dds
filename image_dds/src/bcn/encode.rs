@@ -19,17 +19,37 @@ impl From<Quality> for intel_tex_2::bc6h::EncodeSettings {
     }
 }
 
-impl From<Quality> for intel_tex_2::bc7::EncodeSettings {
-    fn from(value: Quality) -> Self {
-        // bc7 has almost imperceptible errors even at ultra_fast
-        // 4k rgba ultra fast (2s), very fast (7s), fast (12s)
+//impl From<Quality> for intel_tex_2::bc7::EncodeSettings {
+//    fn from(value: Quality) -> Self {
+//        // bc7 has almost imperceptible errors even at ultra_fast
+//        // 4k rgba ultra fast (2s), very fast (7s), fast (12s)
+//        match value {
+//            Quality::VeryFast => intel_tex_2::bc7::alpha_ultra_fast_settings(),
+//            Quality::Fast => intel_tex_2::bc7::alpha_very_fast_settings(),
+//            Quality::Normal => intel_tex_2::bc7::alpha_fast_settings(),
+//            Quality::Slow => intel_tex_2::bc7::alpha_basic_settings(),
+//            Quality::VerySlow => intel_tex_2::bc7::alpha_slow_settings(),
+//        }
+//    }
+//}
+
+fn quality_opaque(value: Quality) -> intel_tex_2::bc7::EncodeSettings{
         match value {
-            Quality::VeryFast => intel_tex_2::bc7::alpha_ultra_fast_settings(),
-            Quality::Fast => intel_tex_2::bc7::alpha_very_fast_settings(),
-            Quality::Normal => intel_tex_2::bc7::alpha_fast_settings(),
-            Quality::Slow => intel_tex_2::bc7::alpha_basic_settings(),
-            Quality::VerySlow => intel_tex_2::bc7::alpha_slow_settings(),
+            Quality::VeryFast => intel_tex_2::bc7::opaque_ultra_fast_settings(),
+            Quality::Fast => intel_tex_2::bc7::opaque_very_fast_settings(),
+            Quality::Normal => intel_tex_2::bc7::opaque_fast_settings(),
+            Quality::Slow => intel_tex_2::bc7::opaque_basic_settings(),
+            Quality::VerySlow => intel_tex_2::bc7::opaque_slow_settings(),
         }
+}
+
+fn quality_alpha(value: Quality) -> intel_tex_2::bc7::EncodeSettings{
+    match value {
+        Quality::VeryFast => intel_tex_2::bc7::alpha_ultra_fast_settings(),
+        Quality::Fast => intel_tex_2::bc7::alpha_very_fast_settings(),
+        Quality::Normal => intel_tex_2::bc7::alpha_fast_settings(),
+        Quality::Slow => intel_tex_2::bc7::alpha_basic_settings(),
+        Quality::VerySlow => intel_tex_2::bc7::alpha_slow_settings(),
     }
 }
 
@@ -198,6 +218,7 @@ impl BcnEncode<u8> for Bc7 {
         rgba8_data: &[u8],
         quality: Quality,
     ) -> Result<Vec<u8>, SurfaceError> {
+        let has_alpha = rgba8_data.chunks(4).any(|rgba| rgba[3] != 255);
         // RGBA with 4 bytes per pixel.
         let surface = intel_tex_2::RgbaSurface {
             width,
@@ -205,8 +226,11 @@ impl BcnEncode<u8> for Bc7 {
             stride: width * CHANNELS as u32,
             data: rgba8_data,
         };
-
-        Ok(intel_tex_2::bc7::compress_blocks(&quality.into(), &surface))
+        match has_alpha{
+            true => Ok(intel_tex_2::bc7::compress_blocks(&quality_alpha(quality), &surface)),
+            false => Ok(intel_tex_2::bc7::compress_blocks(&quality_opaque(quality), &surface)),
+        }
+        
     }
 }
 
